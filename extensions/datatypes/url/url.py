@@ -12,7 +12,7 @@ details = {
     'iconclass': 'fa fa-location-arrow',
     'modulename': 'datatypes.py',
     'classname': 'URLDataType',
-    'defaultwidget': 'urldatatype',
+    'defaultwidget': 'ca0c43ff-af73-4349-bafd-53ff9f22eebd',
     'defaultconfig': None,
     'configcomponent': None,
     'configname': None,

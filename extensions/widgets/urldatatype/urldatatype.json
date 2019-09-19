@@ -1,4 +1,5 @@
 {
+    "widgetid": "ca0c43ff-af73-4349-bafd-53ff9f22eebd",
     "name": "urldatatype",
     "component": "views/components/widgets/urldatatype",
     "defaultconfig": {
