@@ -1,18 +1,31 @@
 import re
 from arches.app.models.system_settings import settings
 from arches.app.datatypes.base import BaseDataType
+from arches.app.models.models import Widget
 
 from rdflib import ConjunctiveGraph as Graph, Namespace
 from rdflib.namespace import RDF, RDFS, XSD, DC, DCTERMS
 archesproject = Namespace(settings.ARCHES_NAMESPACE_FOR_DATA_EXPORT)
 cidoc_nm = Namespace("http://www.cidoc-crm.org/cidoc-crm/")
 
+import logging
+logger = logging.getLogger(__name__)
+
+default_widget_name = "urldatatype"
+default_url_widget = None
+try:
+    default_url_widget = Widget.objects.get(name=default_widget_name)
+except Widget.DoesNotExist as e:
+    logger.warn("Setting 'url' datatype's default widget to None ({0} widget not found).".format(
+        default_widget_name)
+    )
+
 details = {
     'datatype': 'url',
     'iconclass': 'fa fa-location-arrow',
     'modulename': 'datatypes.py',
     'classname': 'URLDataType',
-    'defaultwidget': 'ca0c43ff-af73-4349-bafd-53ff9f22eebd',
+    'defaultwidget': default_url_widget,
     'defaultconfig': None,
     'configcomponent': None,
     'configname': None,
