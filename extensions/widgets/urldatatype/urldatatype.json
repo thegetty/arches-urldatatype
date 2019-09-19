@@ -1,0 +1,11 @@
+{
+    "name": "urldatatype",
+    "component": "views/components/widgets/urldatatype",
+    "defaultconfig": {
+        "url_placeholder": "Enter URL... ",
+        "url_label_placeholder": "Enter URL Label... ",
+        "link_color": "blue"
+    },
+    "helptext": null,
+    "datatype": "url"
+}
