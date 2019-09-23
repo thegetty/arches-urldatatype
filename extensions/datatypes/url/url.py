@@ -3,7 +3,8 @@ from arches.app.models.system_settings import settings
 from arches.app.datatypes.base import BaseDataType
 from arches.app.models.models import Widget
 
-from rdflib import ConjunctiveGraph as Graph, Namespace
+from rdflib import ConjunctiveGraph as Graph
+from rdflib import URIRef, Literal, Namespace
 from rdflib.namespace import RDF, RDFS, XSD, DC, DCTERMS
 archesproject = Namespace(settings.ARCHES_NAMESPACE_FOR_DATA_EXPORT)
 cidoc_nm = Namespace("http://www.cidoc-crm.org/cidoc-crm/")
@@ -112,9 +113,9 @@ class URLDataType(BaseDataType):
             g.add((edge_info['d_uri'], URIRef(edge.ontologyproperty), URIRef(
                 edge_info['range_tile_data']['url'])))
             if edge_info['range_tile_data'].get('url_label') is not None:
-                g.add((URIRef(edge_info['range_tile_data']['url'])), RDFS.label, Literal(
+                g.add((URIRef(edge_info['range_tile_data']['url']), RDFS.label, Literal(
                     edge_info['range_tile_data']['url_label'])
-                )
+                ))
         return g
 
     def from_rdf(self, json_ld_node):
