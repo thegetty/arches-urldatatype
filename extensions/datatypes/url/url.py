@@ -35,6 +35,9 @@ details = {
 }
 
 
+class FailRegexURLMatch(Exception):
+    pass
+
 class URLDataType(BaseDataType):
     """
     URL Datatype to store an optionally labelled hyperlink to a (typically) external resource
@@ -49,8 +52,8 @@ class URLDataType(BaseDataType):
                 # check URL conforms to URL structure
                 url_test = self.URL_REGEX.match(value['url'])
                 if url_test is None:
-                    raise Exception
-        except:
+                    raise FailRegexURLMatch
+        except FailRegexURLMatch:
             errors.append({
                 'type': 'ERROR',
                 'message': 'datatype: {0} value: {1} {2} {3} - {4}. {5}'.format(
@@ -73,7 +76,7 @@ class URLDataType(BaseDataType):
                 document['strings'].append(val)
 
             # FIXME: URLs searchable?
-            # val = {'string': nodevalue['url'], 'nodegroup_id': tile.nodegroup_id, 'provisional': provisional}
+            val = {'string': nodevalue['url'], 'nodegroup_id': tile.nodegroup_id, 'provisional': provisional}
             document['strings'].append(val)
 
     def get_search_terms(self, nodevalue, nodeid=None):

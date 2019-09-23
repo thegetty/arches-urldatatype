@@ -9,9 +9,9 @@ define(['knockout', 'viewmodels/widget'], function (ko, WidgetViewModel) {
 
             this.url_preview_text = ko.pureComputed(function() {
                 if (this.url()) {
-                    if (this.url_label()) {
+                    if (this.url_label && this.url_label()) {
                         return this.url_label();
-                    } else {
+                    } else if (this.url && this.url()) {
                         return this.url();
                     };
                 }
