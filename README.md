@@ -2,6 +2,12 @@
 
 The URL Link Datatype for Arches, organized into an Arches package for ease of addition. Once installed, it allows a user to record URL links in Arches for a given resource by adding a URL datatype to a suitable location of the Resource's model.
 
+## Prerequisites
+
+This is intended to be installed on an Arches application (https://www.archesproject.org/). "Arches is an open source software platform freely available for cultural heritage organizations to independently deploy to help manage their cultural heritage data."
+
+Arches version 4.4 or higher required.
+
 ## Installation
 
 Normal Arches package installation procedure applies. Run the following within the Arches python environment at the top of the Arches application root directory:
