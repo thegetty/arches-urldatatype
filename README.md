@@ -25,5 +25,7 @@ Note that to update the application after making changes made to the package fil
 This datatype and widget package is intended to add a new simple datatype that holds and validates a single hyperlink with an optional text label. This is presented in the report display as a clickable link, allowing Resources held within Arches to directly link to external pages. Any valid http/https URL will be accepted by the datatype.
 
 ## License and Copyright Information
+
+This software is [licensed under the GNU Affero General Public License v3.0](/LICENSE).
  
-© J. Paul Getty Trust.  All rights reserved.
+© J. Paul Getty Trust.
