@@ -23,10 +23,12 @@ from arches.app.models.models import Widget
 from rdflib import ConjunctiveGraph as Graph
 from rdflib import URIRef, Literal, Namespace
 from rdflib.namespace import RDF, RDFS, XSD, DC, DCTERMS
+
 archesproject = Namespace(settings.ARCHES_NAMESPACE_FOR_DATA_EXPORT)
 cidoc_nm = Namespace("http://www.cidoc-crm.org/cidoc-crm/")
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 default_widget_name = "urldatatype"
@@ -34,90 +36,109 @@ default_url_widget = None
 try:
     default_url_widget = Widget.objects.get(name=default_widget_name)
 except Widget.DoesNotExist as e:
-    logger.warn("Setting 'url' datatype's default widget to None ({0} widget not found).".format(
-        default_widget_name)
+    logger.warn(
+        "Setting 'url' datatype's default widget to None ({0} widget not found).".format(
+            default_widget_name
+        )
     )
 
 details = {
-    'datatype': 'url',
-    'iconclass': 'fa fa-location-arrow',
-    'modulename': 'datatypes.py',
-    'classname': 'URLDataType',
-    'defaultwidget': default_url_widget,
-    'defaultconfig': None,
-    'configcomponent': None,
-    'configname': None,
-    'isgeometric': False,
-    'issearchable': True
+    "datatype": "url",
+    "iconclass": "fa fa-location-arrow",
+    "modulename": "datatypes.py",
+    "classname": "URLDataType",
+    "defaultwidget": default_url_widget,
+    "defaultconfig": None,
+    "configcomponent": None,
+    "configname": None,
+    "isgeometric": False,
+    "issearchable": True,
 }
 
 
 class FailRegexURLMatch(Exception):
     pass
 
+
 class URLDataType(BaseDataType):
     """
     URL Datatype to store an optionally labelled hyperlink to a (typically) external resource
     """
 
-    URL_REGEX = re.compile(r"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)")
+    URL_REGEX = re.compile(
+        r"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)"
+    )
 
-    def validate(self, value, row_number=None, source=None):
+    def validate(self, value, row_number=None, source=None, node=None, nodeid=None):
         errors = []
         try:
-            if value.get('url') is not None:
+            if value.get("url") is not None:
                 # check URL conforms to URL structure
-                url_test = self.URL_REGEX.match(value['url'])
+                url_test = self.URL_REGEX.match(value["url"])
                 if url_test is None:
                     raise FailRegexURLMatch
         except FailRegexURLMatch:
-            errors.append({
-                'type': 'ERROR',
-                'message': 'datatype: {0} value: {1} {2} {3} - {4}. {5}'.format(
-                    self.datatype_model.datatype,
-                    value,
-                    source,
-                    row_number,
-                    'this is not a valid HTTP/HTTPS URL',
-                    'This data was not imported.'
-                )
-            })
+            errors.append(
+                {
+                    "type": "ERROR",
+                    "message": "datatype: {0} value: {1} {2} {3} - {4}. {5}".format(
+                        self.datatype_model.datatype,
+                        value,
+                        source,
+                        row_number,
+                        "this is not a valid HTTP/HTTPS URL",
+                        "This data was not imported.",
+                    ),
+                }
+            )
         return errors
 
     def append_to_document(self, document, nodevalue, nodeid, tile, provisional=False):
-        if nodevalue.get('url') is not None:
-            if nodevalue.get('url_label') is not None:
-                val = {'string': nodevalue['url_label'],
-                       'nodegroup_id': tile.nodegroup_id,
-                       'provisional': provisional}
-                document['strings'].append(val)
+        if nodevalue.get("url") is not None:
+            if nodevalue.get("url_label") is not None:
+                val = {
+                    "string": nodevalue["url_label"],
+                    "nodegroup_id": tile.nodegroup_id,
+                    "provisional": provisional,
+                }
+                document["strings"].append(val)
 
             # FIXME: URLs searchable?
-            val = {'string': nodevalue['url'], 'nodegroup_id': tile.nodegroup_id, 'provisional': provisional}
-            document['strings'].append(val)
+            val = {
+                "string": nodevalue["url"],
+                "nodegroup_id": tile.nodegroup_id,
+                "provisional": provisional,
+            }
+            document["strings"].append(val)
 
     def get_search_terms(self, nodevalue, nodeid=None):
         terms = []
-        if nodevalue.get('url') is not None:
-            if nodevalue.get('url_label') is not None:
-                if settings.WORDS_PER_SEARCH_TERM == None or  \
-                    (len(nodevalue['url_label'].split(' ')) < settings.WORDS_PER_SEARCH_TERM):
-                    terms.append(nodevalue['url_label'])
+        if nodevalue.get("url") is not None:
+            if nodevalue.get("url_label") is not None:
+                if settings.WORDS_PER_SEARCH_TERM == None or (
+                    len(nodevalue["url_label"].split(" "))
+                    < settings.WORDS_PER_SEARCH_TERM
+                ):
+                    terms.append(nodevalue["url_label"])
             # terms.append(nodevalue['url'])       FIXME: URLs searchable?
         return terms
 
     def append_search_filters(self, value, node, query, request):
         # Match the label in the same manner as a String datatype
         try:
-            if value['val'] != '':
-                match_type = 'phrase_prefix' if '~' in value['op'] else 'phrase'
-                match_query = Match(field='tiles.data.%s' % (str(node.pk)), query=value['val'], type=match_type)
-                if '!' in value['op']:
+            if value["val"] != "":
+                match_type = "phrase_prefix" if "~" in value["op"] else "phrase"
+                match_query = Match(
+                    field="tiles.data.%s" % (str(node.pk)),
+                    query=value["val"],
+                    type=match_type,
+                )
+                if "!" in value["op"]:
                     query.must_not(match_query)
                     query.filter(Exists(field="tiles.data.%s" % (str(node.pk))))
                 else:
                     query.must(match_query)
-        except KeyError, e:
+        except KeyError as e:
             pass
 
     def get_rdf_uri(self, node, data, which="r"):
@@ -131,15 +152,26 @@ class URLDataType(BaseDataType):
         # returns an in-memory graph object, containing the domain resource, its
         # type and the string as a string literal
         g = Graph()
-        if edge_info['range_tile_data'] is not None and \
-            edge_info['range_tile_data'].get('url') is not None:
-            g.add((edge_info['d_uri'], RDF.type, URIRef(edge.domainnode.ontologyclass)))
-            g.add((edge_info['d_uri'], URIRef(edge.ontologyproperty), URIRef(
-                edge_info['range_tile_data']['url'])))
-            if edge_info['range_tile_data'].get('url_label') is not None:
-                g.add((URIRef(edge_info['range_tile_data']['url']), RDFS.label, Literal(
-                    edge_info['range_tile_data']['url_label'])
-                ))
+        if (
+            edge_info["range_tile_data"] is not None
+            and edge_info["range_tile_data"].get("url") is not None
+        ):
+            g.add((edge_info["d_uri"], RDF.type, URIRef(edge.domainnode.ontologyclass)))
+            g.add(
+                (
+                    edge_info["d_uri"],
+                    URIRef(edge.ontologyproperty),
+                    URIRef(edge_info["range_tile_data"]["url"]),
+                )
+            )
+            if edge_info["range_tile_data"].get("url_label") is not None:
+                g.add(
+                    (
+                        URIRef(edge_info["range_tile_data"]["url"]),
+                        RDFS.label,
+                        Literal(edge_info["range_tile_data"]["url_label"]),
+                    )
+                )
         return g
 
     def from_rdf(self, json_ld_node):
@@ -162,9 +194,29 @@ class URLDataType(BaseDataType):
         try:
             # assume single URL for this datatype
             url_node = json_ld_node[0]
-            value['url'] = url_node['@id']
-            value['url_label'] = None
+            value["url"] = url_node["@id"]
+            value["url_label"] = None
             if "http://www.w3.org/2000/01/rdf-schema#label" in url_node:
-                value['url_label'] = url_node["http://www.w3.org/2000/01/rdf-schema#label"]["@value"]
+                value["url_label"] = url_node[
+                    "http://www.w3.org/2000/01/rdf-schema#label"
+                ]["@value"]
         except (IndexError, AttributeError, KeyError) as e:
             return None
+
+    def default_es_mapping(self):
+        """
+        Default mapping if not specified is a text field
+        """
+
+        return {
+            "properties": {
+                "url": {
+                    "type": "text",
+                    "fields": {"keyword": {"ignore_above": 256, "type": "keyword"}},
+                },
+                "url_label": {
+                    "type": "text",
+                    "fields": {"keyword": {"ignore_above": 256, "type": "keyword"}},
+                },
+            }
+        }
