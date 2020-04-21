@@ -120,7 +120,11 @@ class URLDataType(BaseDataType):
         except KeyError, e:
             pass
 
+    def get_rdf_uri(self, node, data, which="r"):
+        return URIRef(data["url"])
+
     def is_a_literal_in_rdf(self):
+        # Should this be a terminating node? Should be True if it is...
         return False
 
     def to_rdf(self, edge_info, edge):
