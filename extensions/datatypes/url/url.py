@@ -144,6 +144,9 @@ class URLDataType(BaseDataType):
     def get_rdf_uri(self, node, data, which="r"):
         return URIRef(data["url"])
 
+    def accepts_rdf_uri(self, uri):
+        return self.URL_REGEX.match(uri) and not (uri.startswith("urn:uuid:") or uri.startswith(settings.ARCHES_NAMESPACE_FOR_DATA_EXPORT + "resources/"))
+
     def is_a_literal_in_rdf(self):
         # Should this be a terminating node? Should be True if it is...
         return False
@@ -177,23 +180,22 @@ class URLDataType(BaseDataType):
     def from_rdf(self, json_ld_node):
         """
         The json-ld representation of this datatype should look like the following (once expanded)
-
-        [
           {
-            "http://some/kind/of/property": [
+            "http://www.w3.org/2000/01/rdf-schema#label": [
               {
                 "@value": "Link to spectro report"
               }
             ],
             "@id": "https://host/url/to/link"
           }
-        ]
         """
 
         value = {}
-        try:
-            # assume single URL for this datatype
+        if type(json_ld_node) == list:
             url_node = json_ld_node[0]
+        else:
+            url_node = json_ld_node
+        try:
             value["url"] = url_node["@id"]
             value["url_label"] = None
             if "http://www.w3.org/2000/01/rdf-schema#label" in url_node:
@@ -201,7 +203,9 @@ class URLDataType(BaseDataType):
                     "http://www.w3.org/2000/01/rdf-schema#label"
                 ]["@value"]
         except (IndexError, AttributeError, KeyError) as e:
+            print(f"Broke trying to import url datatype: {json_ld_node}")
             return None
+        return value
 
     def default_es_mapping(self):
         """
