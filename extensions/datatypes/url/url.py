@@ -151,6 +151,10 @@ class URLDataType(BaseDataType):
         # Should this be a terminating node? Should be True if it is...
         return False
 
+    def ignore_keys(self):
+        # We process label into the datatype, so downstream processing should ignore it.
+        return ["http://www.w3.org/2000/01/rdf-schema#label http://www.w3.org/2000/01/rdf-schema#Literal"]
+
     def to_rdf(self, edge_info, edge):
         # returns an in-memory graph object, containing the domain resource, its
         # type and the string as a string literal
@@ -201,7 +205,7 @@ class URLDataType(BaseDataType):
             if "http://www.w3.org/2000/01/rdf-schema#label" in url_node:
                 value["url_label"] = url_node[
                     "http://www.w3.org/2000/01/rdf-schema#label"
-                ]["@value"]
+                ][0]["@value"]
         except (IndexError, AttributeError, KeyError) as e:
             print(f"Broke trying to import url datatype: {json_ld_node}")
             return None
